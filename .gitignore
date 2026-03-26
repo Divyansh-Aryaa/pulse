@@ -1,0 +1,85 @@
+# ── Python ───────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+dist/
+build/
+venv/
+.venv/
+env/
+.env/
+*.pyc
+
+# ── Environment Variables ───────────
+# These contain your API keys and passwords — NEVER commit
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
+*.env
+
+# ── Database ──────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+
+# ── Node / React / Frontend ───────────────────────────
+node_modules/
+frontend/dist/
+frontend/build/
+frontend/.env
+frontend/.env.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── Docker ────────────────────────────────────────────
+.docker/
+
+# ── Logs ──────────────────────────────────────────────
+*.log
+logs/
+celery*.log
+pip-log.txt
+
+# ── OS Files ──────────────────────────────────────────
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ── IDE / Editor ──────────────────────────────────────
+.vscode/settings.json
+.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+
+# ── Testing & Coverage ────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+*.cover
+
+# ── Alembic (keep the folder, ignore auto-generated) ──
+alembic/versions/*.pyc
+
+# ── Misc ──────────────────────────────────────────────
+*.pem
+*.key
+*.cert
+*.p12
+*.pfx
+secrets/
+private/
