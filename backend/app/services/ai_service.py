@@ -1,4 +1,3 @@
-# codes here
 import os
 import json
 from openai import OpenAI
@@ -9,28 +8,35 @@ load_dotenv()
 url = "https://router.huggingface.co/v1"
 print(f"Connecting to AI at: {url}")
 
-# 🔹 1. Setup the Kimi-K2 Client via Hugging Face Router
-# This allows us to use the OpenAI SDK with Hugging Face models
-client = OpenAI(
-    base_url="https://router.huggingface.co/v1",
-    api_key=os.getenv("HF_TOKEN")
-)
+# 🔹 Setup client safely
+api_key = os.getenv("HF_TOKEN")
 
-# 🔹 IMPORTANT: You must use this MODEL_ID in your function calls
+client = None
+if api_key:
+    client = OpenAI(
+        base_url="https://router.huggingface.co/v1",
+        api_key=api_key
+    )
+else:
+    print("⚠️ HF_TOKEN not set, AI features disabled")
+
 MODEL_ID = "moonshotai/Kimi-K2-Instruct-0905"
 
+
 def safe_json_parse(content):
-    """Helper to strip markdown and parse JSON safely."""
     try:
-        # Remove markdown formatting if present
-        clean_content = content.replace("```json", "").replace("```", "").strip()
+        clean_content = content.replace("json", "").replace("", "").strip()
         return json.loads(clean_content)
     except Exception as e:
         print(f"JSON Parsing Error: {e}")
         return None
 
-# 🔹 1. Commit Classification using AI
+
+# 🔹 1. Commit Classification
 def classify_commits_ai(commits):
+    if not client:
+        return commits
+
     messages = [c["message"] for c in commits[:10]]
 
     prompt = f"""
@@ -40,21 +46,25 @@ def classify_commits_ai(commits):
     Commits: {messages}
     """
 
-    # UPDATE: Changed model to MODEL_ID (Hugging Face)
-    response = client.chat.completions.create(
-        model=MODEL_ID,
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.2
-    )
+    try:
+        response = client.chat.completions.create(
+            model=MODEL_ID,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.2
+        )
 
-    result = safe_json_parse(response.choices[0].message.content) or []
+        result = safe_json_parse(response.choices[0].message.content) or []
 
-    # Merge types back into commits
-    for i, c in enumerate(result):
-        if i < len(commits):
-            commits[i]["type"] = c.get("type", "Other")
+        for i, c in enumerate(result):
+            if i < len(commits):
+                commits[i]["type"] = c.get("type", "Other")
 
-    return commits
+        return commits
+
+    except Exception as e:
+        print(f"AI Error (classify): {e}")
+        return commits
+
 
 # 🔹 2. Work Distribution
 def get_work_distribution(commits):
@@ -63,6 +73,7 @@ def get_work_distribution(commits):
         t = c.get("type", "Other")
         counts[t] = counts.get(t, 0) + 1
     return counts
+
 
 # 🔹 3. Bus Factor
 def calculate_bus_factor(contributors):
@@ -78,8 +89,12 @@ def calculate_bus_factor(contributors):
     else:
         return {"bus_factor": len(contributors), "risk": "Healthy"}
 
-# 🔹 4. Contributor Personas using AI
+
+# 🔹 4. Personas
 def generate_personas_ai(contributors):
+    if not client:
+        return []
+
     names = [c["name"] for c in contributors]
 
     prompt = f"""
@@ -88,27 +103,40 @@ def generate_personas_ai(contributors):
     Contributors: {names}
     """
 
-    # UPDATE: Changed model to MODEL_ID
-    response = client.chat.completions.create(
-        model=MODEL_ID,
-        messages=[{"role": "user", "content": prompt}],
-    )
+    try:
+        response = client.chat.completions.create(
+            model=MODEL_ID,
+            messages=[{"role": "user", "content": prompt}],
+        )
 
-    return safe_json_parse(response.choices[0].message.content) or []
+        return safe_json_parse(response.choices[0].message.content) or []
 
-# 🔹 5. Weekly Summary using AI
+    except Exception as e:
+        print(f"AI Error (personas): {e}")
+        return []
+
+
+# 🔹 5. Summary
 def generate_summary_ai(commits):
+    if not client:
+        return ""
+
     messages = [c["message"] for c in commits[:15]]
 
     prompt = f"Summarize these commits into a short weekly engineering summary: {messages}"
 
-    # UPDATE: Changed model to MODEL_ID
-    response = client.chat.completions.create(
-        model=MODEL_ID,
-        messages=[{"role": "user", "content": prompt}],
-    )
+    try:
+        response = client.chat.completions.create(
+            model=MODEL_ID,
+            messages=[{"role": "user", "content": prompt}],
+        )
 
-    return response.choices[0].message.content
+        return response.choices[0].message.content
+
+    except Exception as e:
+        print(f"AI Error (summary): {e}")
+        return ""
+
 
 # 🔹 6. Impact Score
 def calculate_impact(commits):
