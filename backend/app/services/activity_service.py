@@ -1,5 +1,5 @@
 import requests
-from config.settings import headers
+from app.config.settings import headers
 
 BASE_URL = "https://api.github.com"
 

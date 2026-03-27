@@ -1,15 +1,15 @@
 from fastapi import APIRouter
-from models.repo_model import RepoRequest
-from utils.parser import get_owner_repo
+from app.models.repo_model import RepoRequest
+from app.utils.parser import get_owner_repo
 
-from services.repo_service import get_repo_info
-from services.contributor_service import get_contributors
-from services.commit_service import get_commits
-from services.activity_service import get_commit_activity
-from services.language_service import get_languages
-from services.insight_service import get_insights
+from app.services.repo_service import get_repo_info
+from app.services.contributor_service import get_contributors
+from app.services.commit_service import get_commits
+from app.services.activity_service import get_commit_activity
+from app.services.language_service import get_languages
+from app.services.insight_service import get_insights
 
-from services.ai_service import (
+from app.services.ai_service import (
     classify_commits_ai,
     get_work_distribution,
     calculate_bus_factor,
