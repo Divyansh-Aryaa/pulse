@@ -22,7 +22,10 @@ router = APIRouter()
 
 @router.post("/analyze-repo")
 def analyze_repo(data: RepoRequest):
-    owner, repo = get_owner_repo(data.repo_url)
+    try:
+        owner, repo = get_owner_repo(data.repo_url)
+    except Exception:
+        return {"error" : "Invalid Github URL"}
 
     repo_info = get_repo_info(owner, repo)
     contributors = get_contributors(owner, repo)
