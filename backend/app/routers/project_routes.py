@@ -4,6 +4,7 @@ from app.utils.parser import get_owner_repo
 
 from app.services.job_store import create_job, complete_job, get_job
 from app.services.analysis_service import run_analysis
+from app.tasks.analysis_task import run_analysis_task
 
 router = APIRouter()
 
@@ -22,8 +23,10 @@ def analyze_job(data: RepoRequest):
 
     try:
         owner, repo = get_owner_repo(data.repo_url)
-        result = run_analysis(owner, repo)
-        complete_job(job_id, result)
+
+        # send task to background worker to run the analysis and store the result in redis
+        run_analysis_task.delay(job_id, owner, repo)
+
     except Exception as e:
         return {"error": str(e)}
 
