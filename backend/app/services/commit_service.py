@@ -5,7 +5,7 @@ from app.config.settings import headers
 BASE_URL = "https://api.github.com"
 
 # 1. Create a Session to reuse the connection. 
-# This prevents GitHub from "hanging up" on you (RemoteDisconnected).
+# This prevents GitHub from "hanging up"..
 session = requests.Session()
 session.headers.update(headers)
 
@@ -17,9 +17,10 @@ def get_commit_details(owner, repo, sha):
         res = session.get(url, timeout=10)
         data = res.json()
         
+        # GitHub can return an error message instead of commit data, so we check if it's a dict first.
         if not isinstance(data, dict):
             return {"additions": 0, "deletions": 0, "files_changed": 0}
-
+        
         return {
             "additions": data.get("stats", {}).get("additions", 0),
             "deletions": data.get("stats", {}).get("deletions", 0),
@@ -43,7 +44,7 @@ def get_commits(owner, repo):
         # 2. To get ALL details without hanging, we fetch them in parallel.
         # This uses 'Threads' to make multiple requests at the same time.
         with ThreadPoolExecutor(max_workers=5) as executor:
-            # Create a list of 'tasks' for each commit SHA
+            # what is sha? it's a unique identifier for each commit and we need it to fetch the details of that commit.
             shas = [c.get("sha") for c in data]
             # Map the get_commit_details function to all SHAs
             all_details = list(executor.map(lambda s: get_commit_details(owner, repo, s), shas))

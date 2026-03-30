@@ -32,7 +32,7 @@ def safe_json_parse(content):
         return None
 
 
-# 🔹 1. Commit Classification
+# 1. This function adds a "type" to each commit based on its message (via AI classification).
 def classify_commits_ai(commits):
     if not client:
         return commits
@@ -66,7 +66,7 @@ def classify_commits_ai(commits):
         return commits
 
 
-# 🔹 2. Work Distribution
+# 2. This function takes commits and counts how many of same type present.
 def get_work_distribution(commits):
     counts = {}
     for c in commits:
@@ -75,7 +75,7 @@ def get_work_distribution(commits):
     return counts
 
 
-# 🔹 3. Bus Factor
+# 3. This function classifies users according to their contribution percentage and hence calculates bus factor.
 def calculate_bus_factor(contributors):
     if not contributors:
         return {"bus_factor": 0, "risk": "Unknown"}
@@ -90,7 +90,7 @@ def calculate_bus_factor(contributors):
         return {"bus_factor": len(contributors), "risk": "Healthy"}
 
 
-# 🔹 4. Personas
+# 4. Creates personas based on contribution patterns using AI.
 def generate_personas_ai(contributors):
     if not client:
         return []
@@ -116,7 +116,7 @@ def generate_personas_ai(contributors):
         return []
 
 
-# 🔹 5. Summary
+# 5. Summary for recent commits using AI.
 def generate_summary_ai(commits):
     if not client:
         return ""
@@ -138,7 +138,7 @@ def generate_summary_ai(commits):
         return ""
 
 
-# 🔹 6. Impact Score
+# 6. A simple impact score based on commit message length.
 def calculate_impact(commits):
     score = 0
     for c in commits:

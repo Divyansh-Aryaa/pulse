@@ -20,6 +20,7 @@ from app.services.ai_service import (
 
 router = APIRouter()
 
+# Endpoint 1: Analyze Repository
 @router.post("/analyze-repo")
 def analyze_repo(data: RepoRequest):
     try:
@@ -35,7 +36,7 @@ def analyze_repo(data: RepoRequest):
     insights = get_insights(contributors, activity)
 
 
-    classified_commits = classify_commits_ai(commits)  # 🔥 AI classification
+    classified_commits = classify_commits_ai(commits)  
     work_distribution = get_work_distribution(classified_commits)
     bus_factor = calculate_bus_factor(contributors)
     personas = generate_personas_ai(contributors)
