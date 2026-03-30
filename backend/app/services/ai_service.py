@@ -8,7 +8,7 @@ load_dotenv()
 url = "https://router.huggingface.co/v1"
 print(f"Connecting to AI at: {url}")
 
-# 🔹 Setup client safely
+# Setup client safely
 api_key = os.getenv("HF_TOKEN")
 
 client = None
@@ -32,7 +32,7 @@ def safe_json_parse(content):
         return None
 
 
-# 🔹 1. Commit Classification
+# Commit Classification
 def classify_commits_ai(commits):
     if not client:
         return commits
@@ -66,7 +66,7 @@ def classify_commits_ai(commits):
         return commits
 
 
-# 🔹 2. Work Distribution
+# Work Distribution
 def get_work_distribution(commits):
     counts = {}
     for c in commits:
@@ -75,7 +75,7 @@ def get_work_distribution(commits):
     return counts
 
 
-# 🔹 3. Bus Factor
+# Bus Factor
 def calculate_bus_factor(contributors):
     if not contributors:
         return {"bus_factor": 0, "risk": "Unknown"}
@@ -90,7 +90,7 @@ def calculate_bus_factor(contributors):
         return {"bus_factor": len(contributors), "risk": "Healthy"}
 
 
-# 🔹 4. Personas
+# Personas
 def generate_personas_ai(contributors):
     if not client:
         return []
@@ -116,14 +116,21 @@ def generate_personas_ai(contributors):
         return []
 
 
-# 🔹 5. Summary
+# Summary
 def generate_summary_ai(commits):
     if not client:
         return ""
 
     messages = [c["message"] for c in commits[:15]]
 
-    prompt = f"Summarize these commits into a short weekly engineering summary: {messages}"
+    prompt = f"""
+    You are a senior Engineering manager. 
+    Write a short weekly report summarizing: 
+    - Key feature added 
+    - Bug fixed
+    - Overall engineering activity
+    
+    Commits: {messages}"""
 
     try:
         response = client.chat.completions.create(
@@ -138,9 +145,56 @@ def generate_summary_ai(commits):
         return ""
 
 
-# 🔹 6. Impact Score
+# Impact Score
 def calculate_impact(commits):
-    score = 0
+    total = 0
     for c in commits:
-        score += len(c.get("message", ""))
-    return score
+        additions = c.get("additions", 0)
+        deletions = c.get("deletions", 0)
+        files = c.get("files_changed")
+
+        total += additions + deletions + (files * 5)
+    return total
+
+# Uneven contribution check
+
+def detect_uneven_contribution(contributors):
+    if not contributors:
+        return{"status": "No Data"}
+    
+    top = contributors[0].get("percentage", 0)
+
+    if top > 70:
+        return {"status": "Highly Uneven", "risk": "High"}
+    elif top > 50:
+        return {"status": "Moderately Uneven", "risk": "Medium"}
+    else:
+        return {"status": "Balanced", "risk": "Low"}
+    
+
+ # AI Engineering Health Score
+
+def calculate_health_score(contributors, commits):
+    score = 100
+
+    # Bus Factor impact
+    bus = calculate_bus_factor(contributors)["bus_factor"]
+    if bus == 1:
+        score -= 40
+    elif bus == 2:
+        score -= 20
+
+    # Uneven Contribution    
+    uneven = detect_uneven_contribution(contributors)
+    if uneven["risk"] == "High":
+        score -= 30
+    elif uneven["risk"] == "Medium":
+        score -= 15
+
+    # Activity level 
+    if len(commits) < 10:
+        score -= 10
+
+    return max(score, 0)
+               
+
