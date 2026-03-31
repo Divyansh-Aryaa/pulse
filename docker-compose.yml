@@ -1,0 +1,51 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./backend
+    container_name: pulse-backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - redis
+      - postgres
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/pulse
+      - REDIS_URL=redis://redis:6379
+
+  worker:
+    build: ./backend
+    container_name: pulse-worker
+    command: celery -A app.celery_app.celery worker --loglevel=info
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - redis
+      - postgres
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/pulse
+      - REDIS_URL=redis://redis:6379
+
+  redis:
+    image: redis:latest
+    container_name: pulse-redis
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:14
+    container_name: pulse-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: pulse
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

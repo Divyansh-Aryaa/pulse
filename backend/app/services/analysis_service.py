@@ -5,6 +5,7 @@ from app.services.commit_service import get_commits
 from app.services.activity_service import get_commit_activity
 from app.services.language_service import get_languages
 from app.services.insight_service import get_insights
+from app.services.cache_service import get_cached_repo, save_repo_cache
 
 from app.services.ai_service import (
     classify_commits_ai,
@@ -19,6 +20,15 @@ from app.services.ai_service import (
 
 
 def run_analysis(owner, repo):
+    # Cache key
+    cache_key = f"{owner}/{repo}"
+    print(f"Checking cache for: {cache_key}")
+    # Check cache FIRST
+    cached = get_cached_repo(cache_key)
+    if cached:
+        print("CACHE HIT (PostgreSQL)")
+        return cached
+    
     # Fetch raw data
     repo_info = get_repo_info(owner, repo)
     contributors = get_contributors(owner, repo)
@@ -26,7 +36,7 @@ def run_analysis(owner, repo):
     activity = get_commit_activity(owner, repo)
     languages = get_languages(owner, repo)
 
-    # Insights
+    #  Insights
     insights = get_insights(contributors, activity)
 
     # AI Processing
@@ -38,19 +48,18 @@ def run_analysis(owner, repo):
     summary = generate_summary_ai(classified_commits)
     impact_score = calculate_impact(classified_commits)
 
-    # Health Score and contributore balance
+    # Advanced metrics
     contribution_balance = detect_uneven_contribution(contributors)
     health_score = calculate_health_score(contributors, classified_commits)
 
-    # Final response
-    return {
+    # Final result
+    result = {
         **repo_info,
         "contributors": contributors,
         "commits": classified_commits,
         "commit_activity": activity,
         "languages": languages,
         "insights": insights,
-
         "ai": {
             "work_distribution": work_distribution,
             "bus_factor": bus_factor,
@@ -61,4 +70,8 @@ def run_analysis(owner, repo):
             "contribution_balance": contribution_balance
         }
     }
-  
+
+    # Save to cache after computation
+    save_repo_cache(cache_key, result)
+    print("SAVED TO CACHE (PostgreSQL)")
+    return result
