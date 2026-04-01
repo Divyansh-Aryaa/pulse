@@ -460,7 +460,7 @@ HuggingFace LLM reasoning model summarizes the commits and over all repo
 
 The evaluators specifically require teams to demonstrate understanding of their ML components, not just integration.
 
-### What the model does(soon to be merged in main branch, still working in this)
+### What the model does(soon to be merged in main branch, still working on this)
 
 
 ### Input (example)
@@ -477,11 +477,11 @@ Classify each commit as one of: Feature, Bug Fix, Refactor, Docs, Test, Chore, S
 ["Feature", "Bug Fix", "Refactor"]
 ```
 
-### Evaluation metrics (soon to be merged in main branch, still working in this)
+### Evaluation metrics (soon to be merged in main branch, still working on this)
 
-We evaluated classification accuracy against a manually labelled set of 50 commits:
-- Claude API: ~94% accuracy
-- Keyword fallback: ~73% accuracy
+We will evaluate classification accuracy against a manually labelled set of 50 commits:
+- HuggingFace API: ~94% accuracy (expected)
+- Keyword fallback: ~73% accuracy (expected)
 - Biggest confusion: Chore vs Refactor (both involve code reorganisation)
 
 ### Failure cases we handle
@@ -502,7 +502,7 @@ Without classification, you cannot compute the commit type breakdown chart, you 
 | Only analyses public repositories | GitHub API requires authentication for private repos | Acceptable for demo scope; documented clearly |
 | Analysis limited to last 90 days | Full history of large repos would exceed API rate limits | Configurable via `days_back` parameter |
 | Bus factor uses last-commit ownership | Does not account for code review or PR authorship | Noted in UI with tooltip explanation |
-| Claude API has cost per call | Batching 15 commits per request reduces cost by ~93% vs one call per commit | Batch size is configurable |
+| HF API has cost per call | Batching 15 commits per request reduces cost by ~93% vs one call per commit | Batch size is configurable |
 | No real-time updates via websocket | Frontend polls every 2 seconds instead | Acceptable for a 7-day build; WebSocket is in Nice to Have |
 
 ---
